@@ -1236,7 +1236,401 @@
   to { transform: rotate(360deg); }
 }
 
+/* ==========================================================================
+   Exam Track Selector Bar (OxfordAQA, Cambridge, IELTS, TOEFL)
+   ========================================================================== */
+.exam-selector-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.exam-tab-btn {
+  background: var(--surface-card);
+  backdrop-filter: blur(16px);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.exam-tab-btn:hover {
+  transform: translateY(-2px);
+  border-color: #38bdf8;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.12);
+}
+
+.exam-tab-btn.active {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+  border-color: #0284c7;
+  border-width: 2px;
+  box-shadow: 0 8px 25px rgba(2, 132, 199, 0.18);
+}
+
+.exam-tab-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-gradient);
+}
+
+.exam-flag {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.exam-tab-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.exam-tab-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.exam-tab-btn.active .exam-tab-name {
+  color: #0284c7;
+}
+
+.exam-tab-sub {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.exam-badge-active {
+  background: #0284c7;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 20px;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+/* ==========================================================================
+   Exam Criteria & Specification Hub Banner
+   ========================================================================== */
+.exam-criteria-banner {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 50%, #e0f2fe 100%);
+  border: 1.5px solid #bae6fd;
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.08);
+}
+
+.criteria-banner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.criteria-banner-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.criteria-subject-badge {
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.criteria-banner-title {
+  font-family: var(--font-display);
+  font-size: 1.22rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.criteria-stats-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.criteria-chip {
+  background: #ffffff;
+  border: 1px solid #bae6fd;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #0369a1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.05);
+}
+
+.criteria-grid-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.criteria-pillar-card {
+  background: #ffffff;
+  border: 1px solid #bae6fd;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+}
+
+.criteria-pillar-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.criteria-pillar-desc {
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.criteria-banner-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0f2fe;
+}
+
+.criteria-subparts-filter {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-subpart {
+  background: #ffffff;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-subpart:hover {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.btn-subpart.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+/* ==========================================================================
+   Photo Card Visual Presentation in Practice Room
+   ========================================================================== */
+.photo-card-presentation {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+  margin-bottom: 18px;
+  background: #f0f9ff;
+  border: 1.5px solid #bae6fd;
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.photo-card-img-wrapper {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.15);
+  height: 240px;
+}
+
+.photo-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-card-label {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.photo-card-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+}
+
+.prescribed-q-item {
+  background: #ffffff;
+  border: 1px solid #bae6fd;
+  border-left: 4px solid #0284c7;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.unseen-q-accordion {
+  margin-top: 6px;
+  background: #ffffff;
+  border: 1px dashed #7dd3fc;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+}
+
+.unseen-q-header {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0284c7;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.unseen-q-list {
+  font-size: 0.88rem;
+  color: #334155;
+  padding-left: 18px;
+}
+
+/* 10-Minute Preparation Notepad */
+.prep-notes-box {
+  margin-top: 14px;
+  background: #ffffff;
+  border: 1px solid #bae6fd;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+}
+
+.prep-notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.prep-notes-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0369a1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.prep-notes-textarea {
+  width: 100%;
+  height: 60px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  font-family: var(--font-main);
+  resize: vertical;
+}
+
+/* ==========================================================================
+   OxfordAQA Mark Scheme Modal Tables
+   ========================================================================== */
+.criteria-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+.criteria-table th, .criteria-table td {
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.criteria-table th {
+  background: #f0f9ff;
+  color: #0284c7;
+  font-weight: 700;
+}
+
+.criteria-table td.level-col {
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  background: #f8fafc;
+  width: 120px;
+}
+
 /* Responsive adjustments */
+@media (max-width: 900px) {
+  .exam-selector-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .photo-card-presentation {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .exam-selector-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .app-header {
     flex-direction: column;
@@ -1270,3 +1664,4 @@
     flex-direction: column;
   }
 }
+

@@ -42,27 +42,60 @@ class AICoach {
   getSystemPrompt(context) {
     const persona = this.preferences.coachPersona || "constructive";
     const level = this.preferences.proficiencyLevel || "b2-c1";
+    const examTrack = context.topic?.examTrack || context.examTrack || "oxford";
 
-    let personaStyle = "supportive, clear, and encouraging";
+    let examInstructions = "";
+    if (examTrack === "oxford") {
+      examInstructions = `You are Teacher-Examiner AD (Adham), evaluating an international student for the OxfordAQA International GCSE English as a Second Language (9280) Speaking Paper (9280/S).
+The OxfordAQA exam is marked out of 40 marks total:
+- Part 1: Photo Card (15 marks) - 3 card questions + 2 unseen questions.
+- Part 2: General Conversation (25 marks) - across the official syllabus themes.
+Assessment Criteria to evaluate:
+1. Communication (Level 1–5): Did the candidate answer all prompts, provide extended responses, justify opinions with reasons, and interact spontaneously?
+2. Knowledge and Use of Language (Level 1–5): Range of vocabulary and accurate use of complex sentence structures (subordinate clauses, conditionals, passive voice, discourse markers).
+3. Pronunciation & Intonation (Level 1–5): Intelligibility, accurate stress, natural cadence.
+In your JSON, include "oxfordExamDetails": {
+  "totalMark": 34,
+  "maxMarks": 40,
+  "partMark": "13 / 15",
+  "predictedGrade": "Grade 8",
+  "communicationLevel": "Level 4 (Clear opinions justified with reasons)",
+  "languageLevel": "Level 4 (Good range of complex subordinate clauses)",
+  "complexStructuresIdentified": ["list of complex structures used like subordinate clauses with 'although', conditionals, etc."]
+}`;
+    } else if (examTrack === "cambridge") {
+      examInstructions = `You are evaluating a student for Cambridge IGCSE ESL (0510 / 0511) Speaking Component (Total 30 Marks).
+Assess across Structure (10 marks), Vocabulary (10 marks), and Fluency (10 marks).`;
+    } else if (examTrack === "ielts") {
+      examInstructions = `You are an official IELTS Speaking Examiner. Evaluate across Fluency & Coherence, Lexical Resource, Grammatical Range & Accuracy, and Pronunciation (Bands 1.0 to 9.0).`;
+    } else if (examTrack === "toefl") {
+      examInstructions = `You are a certified TOEFL iBT Speaking Rater. Evaluate across Delivery, Language Use, and Topic Development (Total 0–30 scaled score).`;
+    }
+
+    let personaStyle = "supportive, clear, and academically rigorous";
     if (persona === "academic") personaStyle = "academically rigorous, analytical, emphasizing precision and intellectual depth";
     if (persona === "executive") personaStyle = "concise, punchy, focused on executive presence, brevity, and persuasive impact";
     if (persona === "socratic") personaStyle = "philosophical and probing, continually challenging premises and assumptions";
 
-    return `You are an elite, world-class Speaking Coach AI specializing in spoken English mastery, confidence building, and idea development.
+    return `You are Teacher-Examiner AD (Adham), an elite international speaking examiner and coach.
 Your persona is: ${personaStyle}.
-Target student proficiency level: ${level.toUpperCase()}.
+Target proficiency level: ${level.toUpperCase()}.
+Current Exam Track: ${examTrack.toUpperCase()}.
 
-Unlike a standardized exam simulator (like IELTS or TOEFL) which only gives static grades, you act as an interactive live mentor. Your mission is to:
+${examInstructions}
+
+Your mission:
 1. Pinpoint exact grammar mistakes in the student's spoken utterance, providing crystal-clear corrections and the underlying rule.
 2. Provide pronunciation & delivery guidance (flag tricky words, phonetic guides, pacing, and filler word consciousness).
 3. Evaluate content relevance and elevate the student's vocabulary with sophisticated collocations.
-4. CRITICAL: Provide IDEA DEVELOPMENT & THOUGHT EXPANSION. Suggest 2-3 novel angles, concrete examples, or counterarguments the student can use to make their response much deeper and more compelling.
-5. Provide a natural spoken response summary (what the AI coach would say out loud in 2-3 sentences to the student) followed by an engaging follow-up question to keep the conversation flowing.
+4. CRITICAL FOR OXFORDAQA / EXAMS: Evaluate IDEA DEVELOPMENT & OPINION JUSTIFICATION. Show the student how to justify opinions and add subordinate clauses.
+5. Provide a natural spoken response summary from Teacher-Examiner AD followed by an engaging follow-up question.
 
 OUTPUT FORMAT REQUIREMENTS:
 You MUST respond with pure, valid JSON (no markdown fence, no backticks, no explanatory text outside the JSON) matching this exact schema:
 {
   "overallBand": 7.5,
+  "oxfordGrade": "Grade 8 (33/40 Marks)",
   "summaryComment": "Brief encouraging summary of their spoken delivery.",
   "grammarAnalysis": {
     "score": 7.0,
@@ -100,15 +133,15 @@ You MUST respond with pure, valid JSON (no markdown fence, no backticks, no expl
   },
   "ideaDevelopment": {
     "score": 7.0,
-    "depthCritique": "Critique on the depth and logic of their arguments.",
+    "depthCritique": "Critique on the depth, opinion justification, and logic of their arguments.",
     "addedIdeas": [
       "Novel perspective or counterargument 1",
       "Concrete real-world example or impact angle 2"
     ],
-    "sampleExpandedResponse": "A refined, C2-level model answer (2-3 sentences) showing how their thought can be beautifully expressed."
+    "sampleExpandedResponse": "A refined model answer (2-3 sentences) showing how their thought can be beautifully expressed with subordinate clauses."
   },
-  "followUpQuestion": "An engaging, thoughtful follow-up question directly building on what they just said.",
-  "spokenCoachResponse": "Warm, natural spoken feedback to be read aloud by TTS. Keep it to 2-3 conversational sentences highlighting their strength, 1 key correction, and the follow-up question."
+  "followUpQuestion": "An engaging follow-up question directly building on what they said.",
+  "spokenCoachResponse": "Warm, natural spoken feedback from Teacher-Examiner AD. Keep it to 2-3 conversational sentences highlighting their strength, 1 key correction, and the next question."
 }`;
   }
 
@@ -447,9 +480,43 @@ You MUST respond with pure, valid JSON (no markdown fence, no backticks, no expl
       ? `Well done! Your response was clear. Keep an eye on phrasing: instead of saying "${mistakes[0].original}", remember to use "${mistakes[0].corrected}". To take your idea further, consider how opposing stakeholders would view this. Now, ${followUp}`
       : `Outstanding work! You expressed your thoughts with confidence and good flow. To elevate your depth even further, consider the broader systemic implications. Now, ${followUp}`;
 
+    // OxfordAQA Level and Mark Calculations
+    const subordinateConjunctions = ["although", "because", "since", "while", "whereas", "if", "unless", "so that", "in order to", "even though"];
+    const foundSubordinates = subordinateConjunctions.filter(w => text.toLowerCase().includes(w));
+
+    let oxfordCommLevel = wordCount > 70 ? 5 : wordCount > 40 ? 4 : wordCount > 20 ? 3 : 2;
+    let oxfordLangLevel = foundSubordinates.length >= 2 ? 5 : foundSubordinates.length >= 1 ? 4 : mistakes.length <= 1 ? 3 : 2;
+    let oxfordPronLevel = detectedFillers.length === 0 ? 5 : detectedFillers.length <= 2 ? 4 : 3;
+
+    const isPart1 = context.topic.part === "part1";
+    let part1Mark = Math.min(15, Math.round((oxfordCommLevel * 2) + oxfordLangLevel));
+    let part2Mark = Math.min(25, Math.round((oxfordCommLevel * 2) + (oxfordLangLevel * 2) + oxfordPronLevel));
+    let totalOxfordMark = isPart1 ? Math.min(40, Math.round(part1Mark * 2.66)) : Math.min(40, Math.round(part2Mark * 1.6));
+
+    let predictedGrade = "Grade 9";
+    if (totalOxfordMark < 16) predictedGrade = "Grade 4";
+    else if (totalOxfordMark < 20) predictedGrade = "Grade 5";
+    else if (totalOxfordMark < 24) predictedGrade = "Grade 6";
+    else if (totalOxfordMark < 28) predictedGrade = "Grade 7";
+    else if (totalOxfordMark < 33) predictedGrade = "Grade 8";
+    else predictedGrade = "Grade 9";
+
+    const isOxford = (context.topic.examTrack === "oxford" || !context.topic.examTrack);
+
     return {
       overallBand: overallBand,
-      summaryComment: `Coherent, responsive delivery with an estimated ${wordCount} spoken words. Good conversational spontaneity.`,
+      oxfordGrade: `${predictedGrade} (${isPart1 ? part1Mark + '/15 marks' : part2Mark + '/25 marks'} • ${totalOxfordMark}/40 Total)`,
+      oxfordAssessment: {
+        totalMarks: totalOxfordMark,
+        partMarks: isPart1 ? `${part1Mark} / 15` : `${part2Mark} / 25`,
+        predictedGrade: predictedGrade,
+        communicationLevel: `Level ${oxfordCommLevel}`,
+        languageLevel: `Level ${oxfordLangLevel}`,
+        subordinatesFound: foundSubordinates.length > 0 ? foundSubordinates : ["None detected. Add 'although', 'whereas', or 'because' to achieve Level 5."]
+      },
+      summaryComment: isOxford 
+        ? `OxfordAQA 9280 Spoken Response: Predicted ${predictedGrade}. Coherent delivery with ${wordCount} words and ${foundSubordinates.length} complex subordinate structures.`
+        : `Coherent, responsive delivery with an estimated ${wordCount} spoken words. Good conversational spontaneity.`,
       grammarAnalysis: {
         score: parseFloat(grammarScore.toFixed(1)),
         mistakes: mistakes.length > 0 ? mistakes : [
@@ -469,12 +536,14 @@ You MUST respond with pure, valid JSON (no markdown fence, no backticks, no expl
       },
       contentAndStructure: {
         score: parseFloat(contentScore.toFixed(1)),
-        relevance: `Directly engages with the topic: "${context.topic.title}".`,
+        relevance: `Directly engages with the OxfordAQA topic: "${context.topic.title}".`,
         betterVocabulary: betterVocabulary
       },
       ideaDevelopment: {
         score: parseFloat(ideaScore.toFixed(1)),
-        depthCritique: "You introduced a clear position. Elevating your thought with structured justification (Claim + Evidence + Counter-balance) will make your response significantly more persuasive.",
+        depthCritique: isOxford 
+          ? "OxfordAQA Examiner Tip: To secure Level 5 in Communication, always back every claim with a concrete reason ('because of this...') and justify contrasting perspectives."
+          : "You introduced a clear position. Elevating your thought with structured justification (Claim + Evidence + Counter-balance) will make your response significantly more persuasive.",
         addedIdeas: addedIdeas,
         sampleExpandedResponse: `While one might initially assume that ${context.topic.title.toLowerCase()} presents straightforward dilemmas, a closer inspection reveals nuanced socio-economic trade-offs that demand calibrated, evidence-based policy solutions.`
       },

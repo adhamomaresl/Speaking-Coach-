@@ -85,10 +85,98 @@
       </div>
     </header>
 
+    <!-- 4 Exam Tracks Selector Bar (OxfordAQA, Cambridge, IELTS, TOEFL) -->
+    <nav class="exam-selector-bar" aria-label="Exam Tracks">
+      <button id="exam-tab-oxford" class="exam-tab-btn active" data-exam="oxford" type="button">
+        <span class="exam-flag">🇬🇧</span>
+        <div class="exam-tab-text">
+          <span class="exam-tab-name">OxfordAQA ESL (9280)</span>
+          <span class="exam-tab-sub">Paper 4 Speaking • 40 Marks (Grades 9–1)</span>
+        </div>
+        <span class="exam-badge-active">Featured</span>
+      </button>
+
+      <button id="exam-tab-cambridge" class="exam-tab-btn" data-exam="cambridge" type="button">
+        <span class="exam-flag">🎓</span>
+        <div class="exam-tab-text">
+          <span class="exam-tab-name">Cambridge IGCSE ESL</span>
+          <span class="exam-tab-sub">0510 / 0511 Candidate Card (30 Marks)</span>
+        </div>
+      </button>
+
+      <button id="exam-tab-ielts" class="exam-tab-btn" data-exam="ielts" type="button">
+        <span class="exam-flag">🌐</span>
+        <div class="exam-tab-text">
+          <span class="exam-tab-name">IELTS Speaking</span>
+          <span class="exam-tab-sub">Parts 1, 2 (Cue Card) & 3 (Bands 1–9)</span>
+        </div>
+      </button>
+
+      <button id="exam-tab-toefl" class="exam-tab-btn" data-exam="toefl" type="button">
+        <span class="exam-flag">🇺🇸</span>
+        <div class="exam-tab-text">
+          <span class="exam-tab-name">TOEFL iBT Speaking</span>
+          <span class="exam-tab-sub">Independent & Integrated (0–30 Score)</span>
+        </div>
+      </button>
+    </nav>
+
     <!-- Main Content Area -->
     <main>
       <!-- VIEW 1: PRACTICE ROOM -->
       <section id="view-practice" class="practice-container">
+        <!-- Dynamic Exam Criteria & Specification Hub Banner -->
+        <section id="exam-criteria-hub" class="exam-criteria-banner">
+          <div class="criteria-banner-header">
+            <div class="criteria-banner-title-group">
+              <span id="criteria-subject-badge" class="criteria-subject-badge">OxfordAQA 9280/S</span>
+              <h2 id="criteria-banner-title" class="criteria-banner-title">International GCSE English as a Second Language Speaking</h2>
+            </div>
+            <button id="btn-open-oxford-criteria" class="btn btn-secondary btn-sm" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <span>Explore Official 9280 Mark Scheme</span>
+            </button>
+          </div>
+
+          <div id="criteria-stats-chips" class="criteria-stats-chips">
+            <span class="criteria-chip">⏱️ Total Duration: 10 mins</span>
+            <span class="criteria-chip">🎯 40 Marks Total (GCSE Grades 9–1)</span>
+            <span class="criteria-chip">📸 Part 1: Photo Card (15 Marks)</span>
+            <span class="criteria-chip">💬 Part 2: General Conversation (25 Marks)</span>
+            <span class="criteria-chip">📝 10-Min Supervised Preparation</span>
+          </div>
+
+          <div class="criteria-grid-preview">
+            <div class="criteria-pillar-card">
+              <h4 class="criteria-pillar-title">1. Communication (Levels 1–5)</h4>
+              <p class="criteria-pillar-desc">Respond clearly, develop points with convincing evidence, justify opinions, and sustain natural interaction.</p>
+            </div>
+            <div class="criteria-pillar-card">
+              <h4 class="criteria-pillar-title">2. Language Range & Accuracy (Levels 1–5)</h4>
+              <p class="criteria-pillar-desc">Accurate use of complex sentence structures (subordinate clauses, conditionals) and wide topic vocabulary.</p>
+            </div>
+            <div class="criteria-pillar-card">
+              <h4 class="criteria-pillar-title">3. Pronunciation & Intonation</h4>
+              <p class="criteria-pillar-desc">Clear articulation, natural syllable stress, and expressive sentence intonation.</p>
+            </div>
+          </div>
+
+          <div class="criteria-banner-actions">
+            <div class="criteria-subparts-filter">
+              <span style="font-size: 0.8rem; font-weight: 700; color: #0369a1; margin-right: 6px; align-self: center;">Practice Mode:</span>
+              <button id="btn-part-filter-all" class="btn-subpart active" data-part="all" type="button">All 9280 Prompts</button>
+              <button id="btn-part-filter-p1" class="btn-subpart" data-part="part1" type="button">Part 1: Photo Cards (15m)</button>
+              <button id="btn-part-filter-p2" class="btn-subpart" data-part="part2" type="button">Part 2: Conversation (25m)</button>
+            </div>
+            <span style="font-size: 0.78rem; color: #475569; font-weight: 500;">Conducted by Teacher-Examiner AD (Adham)</span>
+          </div>
+        </section>
+
         <!-- Topic Presentation Card -->
         <article class="topic-hero-card">
           <div class="topic-meta-row">
@@ -109,7 +197,28 @@
 
           <h2 id="current-topic-title" class="topic-main-title">AI in the Modern Classroom</h2>
 
-          <div class="question-box">
+          <!-- Photo Card Presentation Box (Shown for Part 1 Photo Cards) -->
+          <div id="photo-card-area" class="photo-card-presentation hidden">
+            <div class="photo-card-img-wrapper">
+              <img id="photo-card-image" src="assets/oxford_photocard_1.jpg" alt="OxfordAQA Speaking Photo Card" class="photo-card-img">
+              <span class="photo-card-label">OxfordAQA Photo Card</span>
+            </div>
+            <div class="photo-card-questions">
+              <h4 style="font-size: 0.85rem; font-weight: 700; color: #0284c7; text-transform: uppercase;">Prescribed Card Questions (Answer in sequence):</h4>
+              <div id="prescribed-q-list">
+                <!-- Rendered dynamically -->
+              </div>
+              <div class="unseen-q-accordion">
+                <span class="unseen-q-header">Unseen Teacher-Examiner Follow-Ups:</span>
+                <ol id="unseen-q-list" class="unseen-q-list">
+                  <!-- Rendered dynamically -->
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Regular Question Box (Shown for Conversation Prompts) -->
+          <div id="regular-question-box" class="question-box">
             <p id="current-topic-question" class="question-text">
               Do you believe artificial intelligence tools like ChatGPT enhance student critical thinking, or do they undermine authentic learning? Explain your stance with real-world examples.
             </p>
@@ -122,6 +231,15 @@
               <line x1="12" y1="16" x2="12.01" y2="16"></line>
             </svg>
             <span id="current-topic-guidance">Structure your response with a clear thesis, at least one counterargument, and a practical proposal.</span>
+          </div>
+
+          <!-- 10-Minute Preparation Notepad (For OxfordAQA Photo Cards) -->
+          <div id="prep-notes-area" class="prep-notes-box hidden">
+            <div class="prep-notes-header">
+              <span class="prep-notes-title">📝 Candidate Preparation Notepad (Optional Notes for 10-Min Prep)</span>
+              <span style="font-size: 0.72rem; color: #64748b;">Notes cannot be full script</span>
+            </div>
+            <textarea id="prep-notes-text" class="prep-notes-textarea" placeholder="Jot down bullet points, key verbs, and ideas to structure your answers..."></textarea>
           </div>
 
           <!-- Key Recommended Vocabulary -->
@@ -536,6 +654,123 @@
         </div>
         <div class="modal-footer">
           <button id="btn-save-custom-topic" class="btn btn-primary" type="button">Create & Practice Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OXFORDAQA 9280 OFFICIAL CRITERIA & MARK SCHEME MODAL -->
+    <div id="modal-oxford-criteria" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="oxford-modal-title">
+      <div class="modal-card" style="max-width: 780px;">
+        <div class="modal-header">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span class="criteria-subject-badge">OxfordAQA 9280/S</span>
+              <span class="badge badge-band">Paper 4 Speaking • 40 Marks</span>
+            </div>
+            <h3 id="oxford-modal-title" class="modal-title">Official OxfordAQA ESL Assessment Criteria & Mark Scheme</h3>
+          </div>
+          <button id="btn-close-oxford-criteria" class="btn-icon" aria-label="Close modal">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 0.92rem; color: #475569; line-height: 1.5;">
+            The OxfordAQA International GCSE English as a Second Language (9280) speaking examination lasts approximately 10 minutes and is marked out of <strong>40 marks total</strong> across two compulsory sections:
+          </p>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;">
+            <div style="background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: 8px; padding: 12px;">
+              <h4 style="font-size: 0.9rem; font-weight: 700; color: #0284c7; margin-bottom: 4px;">📸 Part 1: Photo Card (15 Marks)</h4>
+              <p style="font-size: 0.8rem; color: #334155;">10 min supervised preparation. 3 prescribed questions printed on card + 2 unseen teacher-examiner follow-ups (3–4 minutes).</p>
+            </div>
+            <div style="background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: 8px; padding: 12px;">
+              <h4 style="font-size: 0.9rem; font-weight: 700; color: #0284c7; margin-bottom: 4px;">💬 Part 2: General Conversation (25 Marks)</h4>
+              <p style="font-size: 0.8rem; color: #334155;">Spontaneous interactive conversation covering the remaining two syllabus themes not tested in Part 1 (6–7 minutes).</p>
+            </div>
+          </div>
+
+          <h4 style="font-size: 0.98rem; font-weight: 800; color: #0f172a; margin: 14px 0 8px;">1. Communication Assessment Grid (Task Fulfillment & Interaction)</h4>
+          <table class="criteria-table">
+            <thead>
+              <tr>
+                <th>Level</th>
+                <th>Marks</th>
+                <th>Official OxfordAQA Performance Descriptors</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="level-col">Level 5</td>
+                <td>9–10</td>
+                <td>Consistently clear, relevant, and fully developed responses. Expresses and justifies points of view with convincing reasons/evidence. Highly spontaneous with active, natural interaction.</td>
+              </tr>
+              <tr>
+                <td class="level-col">Level 4</td>
+                <td>7–8</td>
+                <td>Clear and relevant responses with good development. Expresses opinions and justifies them effectively. Good spontaneity and engagement with the examiner.</td>
+              </tr>
+              <tr>
+                <td class="level-col">Level 3</td>
+                <td>5–6</td>
+                <td>Mostly clear communication. Answers questions with reasonable detail. Opinions are expressed and some justification given. Satisfactory interaction.</td>
+              </tr>
+              <tr>
+                <td class="level-col">Level 2</td>
+                <td>3–4</td>
+                <td>Communication is hesitant or incomplete. Conveys basic information; limited opinions with little justification. Relies on teacher prompting.</td>
+              </tr>
+              <tr>
+                <td class="level-col">Level 1</td>
+                <td>1–2</td>
+                <td>Very limited communication. Short, disjointed, or isolated words/phrases. Difficulty conveying meaning even with repeated prompting.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4 style="font-size: 0.98rem; font-weight: 800; color: #0f172a; margin: 14px 0 8px;">2. Knowledge & Use of Language (Range & Accuracy of Complex Structures)</h4>
+          <table class="criteria-table">
+            <thead>
+              <tr>
+                <th>Level</th>
+                <th>Part 2 (25m) / Part 1 (15m)</th>
+                <th>Official OxfordAQA Descriptors (Syntax & Grammar)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="level-col">Level 5</td>
+                <td>9–10 / 5</td>
+                <td>Very good range of vocabulary and complex sentence structures (subordinate clauses, conditionals, passive voice). High degree of grammatical accuracy; errors are minor and non-intrusive.</td>
+              </tr>
+              <tr>
+                <td class="level-col">Level 4</td>
+                <td>7–8 / 4</td>
+                <td>Good range of vocabulary and complex sentence structures attempted successfully. Generally accurate with good control of basic and intermediate grammar.</td>
+              </tr>
+              <tr>
+                <td class="level-col">Level 3</td>
+                <td>5–6 / 3</td>
+                <td>Reasonable vocabulary and control of simple sentences with some attempts at compound and subordinate structures. More accurate than inaccurate.</td>
+              </tr>
+              <tr>
+                <td class="level-col">Level 2</td>
+                <td>3–4 / 2</td>
+                <td>Limited vocabulary; basic, repetitive sentence structures. Frequent grammatical inaccuracies that sometimes impede clarity.</td>
+              </tr>
+              <tr>
+                <td class="level-col">Level 1</td>
+                <td>1–2 / 1</td>
+                <td>Very restricted vocabulary and grammar. Persistent errors impede understanding throughout.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 8px; padding: 12px; margin-top: 10px;">
+            <p style="font-size: 0.82rem; color: #92400e; font-weight: 600;">
+              ⚠️ Critical OxfordAQA Marking Rule: Communication is the foundational pillar. Candidates who score 0 for Communication are awarded 0 in all other categories. To reach Level 4 or 5, you MUST justify opinions with reasons and demonstrate complex subordinate clauses!
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-modal-start-oxford" class="btn btn-primary" type="button">Start OxfordAQA Speaking Practice Now</button>
         </div>
       </div>
     </div>

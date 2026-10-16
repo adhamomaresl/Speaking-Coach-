@@ -4,6 +4,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   // --- State Initialization ---
   let preferences = StorageManager.getPreferences();
+  let currentExamTrack = "oxford";
+  let currentSubpartFilter = "all";
   let currentTopic = SPEAKING_TOPICS[0];
   let currentTurnIndex = 0;
   let activeSession = {
@@ -143,14 +145,35 @@ document.addEventListener("DOMContentLoaded", () => {
     btnTestSupabase: document.getElementById("btn-test-supabase"),
     supabaseStatusBadge: document.getElementById("supabase-status-badge"),
 
-    // Custom Topic Modal
-    customTopicModal: document.getElementById("custom-topic-modal"),
-    btnCloseCustomTopic: document.getElementById("btn-close-custom-topic"),
-    btnSaveCustomTopic: document.getElementById("btn-save-custom-topic"),
-    inputCustomTitle: document.getElementById("input-custom-title"),
-    inputCustomCategory: document.getElementById("input-custom-category"),
-    inputCustomQuestion: document.getElementById("input-custom-question"),
-    inputCustomVocab: document.getElementById("input-custom-vocab"),
+    // 4 Exam Track Tabs
+    tabOxford: document.getElementById("exam-tab-oxford"),
+    tabCambridge: document.getElementById("exam-tab-cambridge"),
+    tabIelts: document.getElementById("exam-tab-ielts"),
+    tabToefl: document.getElementById("exam-tab-toefl"),
+
+    // Criteria Hub & Specification Banner
+    examCriteriaHub: document.getElementById("exam-criteria-hub"),
+    criteriaSubjectBadge: document.getElementById("criteria-subject-badge"),
+    criteriaBannerTitle: document.getElementById("criteria-banner-title"),
+    criteriaStatsChips: document.getElementById("criteria-stats-chips"),
+    btnOpenOxfordCriteria: document.getElementById("btn-open-oxford-criteria"),
+    btnPartFilterAll: document.getElementById("btn-part-filter-all"),
+    btnPartFilterP1: document.getElementById("btn-part-filter-p1"),
+    btnPartFilterP2: document.getElementById("btn-part-filter-p2"),
+
+    // Oxford Photo Card & Notes in Practice Room
+    photoCardArea: document.getElementById("photo-card-area"),
+    photoCardImage: document.getElementById("photo-card-image"),
+    prescribedQList: document.getElementById("prescribed-q-list"),
+    unseenQList: document.getElementById("unseen-q-list"),
+    regularQuestionBox: document.getElementById("regular-question-box"),
+    prepNotesArea: document.getElementById("prep-notes-area"),
+    prepNotesText: document.getElementById("prep-notes-text"),
+
+    // OxfordAQA Mark Scheme Modal
+    modalOxfordCriteria: document.getElementById("modal-oxford-criteria"),
+    btnCloseOxfordCriteria: document.getElementById("btn-close-oxford-criteria"),
+    btnModalStartOxford: document.getElementById("btn-modal-start-oxford"),
 
     // Toast
     toast: document.getElementById("toast")
@@ -158,8 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Initialization Routine ---
   function init() {
-    loadTopic(currentTopic);
-    renderTopicsList();
+    switchExamTrack("oxford");
     renderHistoryList();
     populateVoiceSelect();
     applyPreferencesToSettingsUI();
@@ -168,14 +190,115 @@ document.addEventListener("DOMContentLoaded", () => {
     bindEvents();
   }
 
+  // --- Exam Track Switching ---
+  function switchExamTrack(trackId) {
+    currentExamTrack = trackId;
+    currentSubpartFilter = "all";
+
+    const tabs = [
+      { id: "oxford", el: elements.tabOxford },
+      { id: "cambridge", el: elements.tabCambridge },
+      { id: "ielts", el: elements.tabIelts },
+      { id: "toefl", el: elements.tabToefl }
+    ];
+
+    tabs.forEach(t => {
+      if (t.el) {
+        if (t.id === trackId) t.el.classList.add("active");
+        else t.el.classList.remove("active");
+      }
+    });
+
+    const trackInfo = EXAM_TRACKS[trackId];
+    if (trackInfo && elements.criteriaBannerTitle) {
+      elements.criteriaSubjectBadge.textContent = trackInfo.shortName || trackInfo.name;
+      elements.criteriaBannerTitle.textContent = trackInfo.fullName || trackInfo.name;
+
+      if (trackId === "oxford") {
+        elements.criteriaStatsChips.innerHTML = `
+          <span class="criteria-chip">⏱️ Total Duration: 10 mins</span>
+          <span class="criteria-chip">🎯 40 Marks Total (GCSE Grades 9–1)</span>
+          <span class="criteria-chip">📸 Part 1: Photo Card (15 Marks)</span>
+          <span class="criteria-chip">💬 Part 2: General Conversation (25 Marks)</span>
+          <span class="criteria-chip">📝 10-Min Supervised Preparation</span>
+        `;
+        if (elements.btnOpenOxfordCriteria) elements.btnOpenOxfordCriteria.classList.remove("hidden");
+        if (elements.btnPartFilterAll) elements.btnPartFilterAll.parentElement.classList.remove("hidden");
+      } else if (trackId === "cambridge") {
+        elements.criteriaStatsChips.innerHTML = `
+          <span class="criteria-chip">⏱️ Duration: 10–15 mins</span>
+          <span class="criteria-chip">🎯 30 Marks Total (Grades A*–G / 9–1)</span>
+          <span class="criteria-chip">📑 Part A-D: Candidate Card & Discussion</span>
+          <span class="criteria-chip">⚖️ Structure (10m), Vocab (10m), Fluency (10m)</span>
+        `;
+        if (elements.btnOpenOxfordCriteria) elements.btnOpenOxfordCriteria.classList.add("hidden");
+        if (elements.btnPartFilterAll) elements.btnPartFilterAll.parentElement.classList.add("hidden");
+      } else if (trackId === "ielts") {
+        elements.criteriaStatsChips.innerHTML = `
+          <span class="criteria-chip">⏱️ Duration: 11–14 mins</span>
+          <span class="criteria-chip">🎯 Standardized Bands 1.0–9.0</span>
+          <span class="criteria-chip">🗣️ Part 1 Interview • Part 2 Cue Card • Part 3 Discussion</span>
+          <span class="criteria-chip">📊 FC, LR, GRA, Pronunciation Rubric</span>
+        `;
+        if (elements.btnOpenOxfordCriteria) elements.btnOpenOxfordCriteria.classList.add("hidden");
+        if (elements.btnPartFilterAll) elements.btnPartFilterAll.parentElement.classList.add("hidden");
+      } else if (trackId === "toefl") {
+        elements.criteriaStatsChips.innerHTML = `
+          <span class="criteria-chip">⏱️ Duration: 17 mins</span>
+          <span class="criteria-chip">🎯 Score 0–30 (4 Tasks)</span>
+          <span class="criteria-chip">🎙️ Independent Task 1 • Integrated Tasks 2–4</span>
+          <span class="criteria-chip">📈 Delivery, Language Use, Topic Development</span>
+        `;
+        if (elements.btnOpenOxfordCriteria) elements.btnOpenOxfordCriteria.classList.add("hidden");
+        if (elements.btnPartFilterAll) elements.btnPartFilterAll.parentElement.classList.add("hidden");
+      }
+    }
+
+    const examTopics = getTopicsByExam(trackId);
+    if (examTopics.length > 0) {
+      loadTopic(examTopics[0]);
+    }
+    renderTopicsList();
+  }
+
   // --- Topic Management ---
   function loadTopic(topic) {
     currentTopic = topic;
-    elements.topicBadge.textContent = topic.category;
+    elements.topicBadge.textContent = topic.partName || topic.category || "Speaking Task";
     elements.topicTitle.textContent = topic.title;
-    elements.topicQuestion.textContent = topic.question;
     elements.topicGuidance.textContent = topic.guidance || "Formulate a well-structured argument with supporting examples.";
-    
+
+    // Photo Card check (e.g. OxfordAQA Part 1)
+    if (topic.image && elements.photoCardArea) {
+      elements.photoCardArea.classList.remove("hidden");
+      elements.photoCardImage.src = topic.image;
+      if (elements.regularQuestionBox) elements.regularQuestionBox.classList.add("hidden");
+
+      elements.prescribedQList.innerHTML = "";
+      (topic.prescribedQuestions || [topic.question]).forEach(q => {
+        const div = document.createElement("div");
+        div.className = "prescribed-q-item";
+        div.textContent = q;
+        elements.prescribedQList.appendChild(div);
+      });
+
+      elements.unseenQList.innerHTML = "";
+      (topic.unseenQuestions || []).forEach(uq => {
+        const li = document.createElement("li");
+        li.textContent = uq;
+        elements.unseenQList.appendChild(li);
+      });
+
+      if (elements.prepNotesArea) {
+        elements.prepNotesArea.classList.remove("hidden");
+      }
+    } else {
+      if (elements.photoCardArea) elements.photoCardArea.classList.add("hidden");
+      if (elements.regularQuestionBox) elements.regularQuestionBox.classList.remove("hidden");
+      if (elements.prepNotesArea) elements.prepNotesArea.classList.add("hidden");
+      elements.topicQuestion.textContent = topic.question;
+    }
+
     // Key vocab chips
     elements.topicVocabList.innerHTML = "";
     if (topic.keyVocabulary && topic.keyVocabulary.length > 0) {
@@ -193,7 +316,6 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.feedbackContent.classList.add("hidden");
     elements.feedbackPlaceholder.classList.remove("hidden");
     resetTranscript();
-    resetTimer();
   }
 
   function resetTranscript() {
@@ -399,7 +521,11 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.feedbackContent.classList.remove("hidden");
 
     // Band score & summary
-    elements.overallBandBadge.textContent = `Band ${evaluation.overallBand || 7.0} / 9.0`;
+    if (evaluation.oxfordGrade) {
+      elements.overallBandBadge.textContent = evaluation.oxfordGrade;
+    } else {
+      elements.overallBandBadge.textContent = `Band ${evaluation.overallBand || 7.0} / 9.0`;
+    }
     elements.summaryComment.textContent = evaluation.summaryComment || "Solid spoken response.";
 
     // 1. Grammar Mistakes
@@ -604,17 +730,25 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderTopicsList() {
     const customTopics = StorageManager.getCustomTopics();
     const allTopics = [...SPEAKING_TOPICS, ...customTopics];
-    const category = elements.categoryFilter.value;
+    const category = elements.categoryFilter ? elements.categoryFilter.value : "all";
 
     elements.topicsGrid.innerHTML = "";
-    const filtered = category === "all" ? allTopics : allTopics.filter(t => t.category === category);
+    let filtered = allTopics.filter(t => !t.examTrack || t.examTrack === currentExamTrack);
+
+    if (category !== "all") {
+      filtered = filtered.filter(t => t.category === category);
+    }
+
+    if (currentSubpartFilter && currentSubpartFilter !== "all") {
+      filtered = filtered.filter(t => t.part === currentSubpartFilter);
+    }
 
     filtered.forEach(topic => {
       const card = document.createElement("div");
       card.className = "topic-card";
       card.innerHTML = `
         <div class="topic-card-header">
-          <span class="topic-cat-tag">${escapeHTML(topic.category)}</span>
+          <span class="topic-cat-tag">${escapeHTML(topic.partName || topic.category)}</span>
           <span class="topic-diff-tag">${escapeHTML(topic.difficulty || "All Levels")}</span>
         </div>
         <h3 class="topic-card-title">${escapeHTML(topic.title)}</h3>
@@ -624,7 +758,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="5 3 19 12 5 21 5 3"/>
             </svg>
-            Practice This Topic
+            Practice This Task
           </button>
         </div>
       `;
@@ -632,6 +766,7 @@ document.addEventListener("DOMContentLoaded", () => {
       card.querySelector(".btn-practice-topic").addEventListener("click", () => {
         loadTopic(topic);
         switchTab("practice");
+        window.scrollTo({ top: 0, behavior: "smooth" });
       });
 
       elements.topicsGrid.appendChild(card);
@@ -788,6 +923,48 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.tabPractice.addEventListener("click", () => switchTab("practice"));
     elements.tabTopics.addEventListener("click", () => switchTab("topics"));
     elements.tabHistory.addEventListener("click", () => switchTab("history"));
+
+    // 4 Exam Track Switchers
+    if (elements.tabOxford) elements.tabOxford.addEventListener("click", () => switchExamTrack("oxford"));
+    if (elements.tabCambridge) elements.tabCambridge.addEventListener("click", () => switchExamTrack("cambridge"));
+    if (elements.tabIelts) elements.tabIelts.addEventListener("click", () => switchExamTrack("ielts"));
+    if (elements.tabToefl) elements.tabToefl.addEventListener("click", () => switchExamTrack("toefl"));
+
+    // OxfordAQA Criteria Modal Controls
+    if (elements.btnOpenOxfordCriteria) {
+      elements.btnOpenOxfordCriteria.addEventListener("click", () => {
+        elements.modalOxfordCriteria.classList.remove("hidden");
+      });
+    }
+    if (elements.btnCloseOxfordCriteria) {
+      elements.btnCloseOxfordCriteria.addEventListener("click", () => {
+        elements.modalOxfordCriteria.classList.add("hidden");
+      });
+    }
+    if (elements.btnModalStartOxford) {
+      elements.btnModalStartOxford.addEventListener("click", () => {
+        elements.modalOxfordCriteria.classList.add("hidden");
+        switchExamTrack("oxford");
+        switchTab("practice");
+      });
+    }
+
+    // Oxford Part Filters
+    const partFilters = [elements.btnPartFilterAll, elements.btnPartFilterP1, elements.btnPartFilterP2];
+    partFilters.forEach(btn => {
+      if (btn) {
+        btn.addEventListener("click", () => {
+          partFilters.forEach(b => b?.classList.remove("active"));
+          btn.classList.add("active");
+          currentSubpartFilter = btn.dataset.part;
+          const filteredTopics = getTopicsByExam("oxford").filter(t => currentSubpartFilter === "all" || t.part === currentSubpartFilter);
+          if (filteredTopics.length > 0) {
+            loadTopic(filteredTopics[0]);
+          }
+          renderTopicsList();
+        });
+      }
+    });
 
     // Speak Question
     elements.btnSpeakQuestion.addEventListener("click", () => {
