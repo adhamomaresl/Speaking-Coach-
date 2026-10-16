@@ -94,9 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
     btnToggleMic: document.getElementById("btn-toggle-mic"),
     btnSubmitAnswer: document.getElementById("btn-submit-answer"),
     btnClearTranscript: document.getElementById("btn-clear-transcript"),
-    textInputFallback: document.getElementById("text-input-fallback"),
-    btnToggleTextInput: document.getElementById("btn-toggle-text-input"),
-    textInputContainer: document.getElementById("text-input-container"),
     audioPlaybackContainer: document.getElementById("audio-playback-container"),
     audioPlaybackPlayer: document.getElementById("audio-playback-player"),
 
@@ -244,23 +241,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Real-Time Speech UI ---
   function updateTranscriptUI() {
-    const combined = (currentTranscript.final + " " + currentTranscript.interim).trim();
-    if (!combined) {
-      elements.transcriptDisplay.innerHTML = '<span class="text-muted italic">Listening... Speak clearly into your microphone.</span>';
-      elements.wordCountBadge.textContent = "0 words";
-      return;
-    }
-
-    // Highlighting interim text
-    let html = `<span>${escapeHTML(currentTranscript.final)}</span>`;
-    if (currentTranscript.interim) {
-      html += ` <span class="interim-text">${escapeHTML(currentTranscript.interim)}</span>`;
-    }
-    elements.transcriptDisplay.innerHTML = html;
+    const combined = (currentTranscript.final + (currentTranscript.interim ? " " + currentTranscript.interim : "")).trim();
+    elements.transcriptDisplay.value = combined;
 
     const words = combined.split(/\s+/).filter(Boolean);
     elements.wordCountBadge.textContent = `${words.length} words`;
-    elements.textInputFallback.value = combined;
   }
 
   function updateListeningStateUI(listening) {
@@ -273,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span>Stop Speaking</span>
       `;
       elements.coachOrb.className = "coach-orb listening";
-      elements.coachStatusText.textContent = "Coach is actively listening to you...";
+      elements.coachStatusText.textContent = "Coach is actively recording your voice...";
       startTimer();
     } else {
       elements.btnToggleMic.classList.remove("btn-active-listening");
@@ -309,11 +294,8 @@ document.addEventListener("DOMContentLoaded", () => {
       speechService.stopListening();
     }
 
-    // Get answer text from speech or fallback textarea
-    let answerText = (currentTranscript.final + " " + currentTranscript.interim).trim();
-    if (!answerText) {
-      answerText = elements.textInputFallback.value.trim();
-    }
+    // Get answer text from speech textarea
+    let answerText = elements.transcriptDisplay.value.trim();
 
     // If answerText is empty but audio was recorded, attempt AI transcription
     if (!answerText && lastRecordedAudio?.blob && (preferences.groqKey || preferences.openaiKey)) {
@@ -334,6 +316,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // If user has Gemini key and recorded audio, Gemini can evaluate directly from audio
+    if (!answerText && lastRecordedAudio?.base64 && preferences.provider === "gemini" && preferences.geminiKey) {
+      answerText = "Audio Spoken Response";
+    }
+
     // If still no text and no audio
     if (!answerText && !lastRecordedAudio) {
       showToast("Please speak or type a response first before evaluating.", "warning");
@@ -347,10 +334,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (!answerText && lastRecordedAudio && preferences.provider !== "gemini") {
-      showToast("Audio recorded! Please type a quick note of what you said below to run local evaluation.", "info");
-      elements.textInputContainer.classList.remove("hidden");
-      elements.textInputFallback.focus();
+    if (!answerText && lastRecordedAudio) {
+      showToast("Voice recorded! Please type a quick note of what you said in the box to run the evaluation.", "info");
+      elements.transcriptDisplay.focus();
       elements.btnSubmitAnswer.disabled = false;
       elements.btnSubmitAnswer.innerHTML = `
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -834,13 +820,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Clear transcript
     elements.btnClearTranscript.addEventListener("click", resetTranscript);
 
-    // Toggle Text Input fallback
-    elements.btnToggleTextInput.addEventListener("click", () => {
-      elements.textInputContainer.classList.toggle("hidden");
-    });
-
     // Textarea sync with transcript
-    elements.textInputFallback.addEventListener("input", (e) => {
+    elements.transcriptDisplay.addEventListener("input", (e) => {
+      currentTranscript.final = e.target.value;
+      currentTranscript.interim = "";
       const words = e.target.value.trim().split(/\s+/).filter(Boolean);
       elements.wordCountBadge.textContent = `${words.length} words`;
     });

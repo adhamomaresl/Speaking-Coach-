@@ -147,19 +147,14 @@
               </span>
             </div>
             <div>
-              <button id="btn-toggle-text-input" class="btn btn-outline btn-xs" title="Switch to typed input">
-                Keyboard Mode
-              </button>
               <button id="btn-clear-transcript" class="btn btn-outline btn-xs" title="Reset current speech">
                 Clear
               </button>
             </div>
           </div>
 
-          <!-- Real-Time Speech Recognition Transcript Box -->
-          <div id="live-transcript-box" class="transcript-display-box" role="region" aria-live="polite">
-            <span class="text-muted italic">Click "Start Speaking" or use your microphone to begin your answer...</span>
-          </div>
+          <!-- Interactive Live Speech & Text Response Area -->
+          <textarea id="live-transcript-box" class="transcript-display-box" style="width: 100%; resize: vertical;" placeholder="Click 'Start Speaking' to talk into your microphone, or type your response directly here..." rows="4"></textarea>
 
           <!-- Recorded Audio Playback Bar -->
           <div id="audio-playback-container" class="hidden" style="margin-bottom: 16px; padding: 10px 16px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
@@ -168,11 +163,6 @@
               <span style="font-size: 0.85rem; color: #cbd5e1;">Review your voice recording:</span>
             </div>
             <audio id="audio-playback-player" controls style="height: 34px; max-width: 300px;"></audio>
-          </div>
-
-          <!-- Fallback Collapsible Typed Input -->
-          <div id="text-input-container" class="text-input-wrapper hidden">
-            <textarea id="text-input-fallback" class="text-fallback-area" placeholder="Type your spoken thoughts here if you prefer not to use voice..."></textarea>
           </div>
 
           <!-- Deck Action Buttons -->
