@@ -22,8 +22,8 @@ const DEFAULT_PREFERENCES = {
   autoReadFeedback: true,
   autoListenAfterPrompt: false,
   timerSeconds: 120,
-  supabaseUrl: "",
-  supabaseKey: "sb_publishable_FTY_mD8gPlZkecFKlcBIiA__wkGkTYX"
+  supabaseUrl: "https://opmgoslhzbcusytodxiv.supabase.co",
+  supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wbWdvc2xoemJjdXN5dG9keGl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNTU4MzgsImV4cCI6MjEwNzczMTgzOH0.Dt3Q4H0yvuB_kAYsDEty9F3_tJu_GVSd3BSw0qOHvrQ"
 };
 
 class StorageManager {
