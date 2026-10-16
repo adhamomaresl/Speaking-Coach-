@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Speaking Coach - Interactive live spoken English practice with real-time feedback on grammar, pronunciation, content quality, and deep idea development.">
+  <meta name="keywords" content="speaking coach, ESL practice, IELTS speaking, TOEFL speaking, pronunciation, grammar correction, idea development">
+  <title>AI Speaking Coach | Live Spoken English & Idea Development</title>
+  
+  <!-- Google Fonts Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Main Application Header -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" x2="12" y1="19" y2="22"></line>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Vocalis AI</h1>
+          <p class="brand-subtitle">Speaking Coach & Idea Development</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" aria-label="Main Navigation">
+        <button id="tab-practice" class="nav-tab-btn active" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="10 8 16 12 10 16 10 8"></polygon>
+          </svg>
+          <span>Practice Room</span>
+        </button>
+        <button id="tab-topics" class="nav-tab-btn" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+            <path d="M6 6h10"></path>
+            <path d="M6 10h10"></path>
+          </svg>
+          <span>Topics & Prompts</span>
+        </button>
+        <button id="tab-history" class="nav-tab-btn" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3v5h5"></path>
+            <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path>
+            <path d="M12 7v5l4 2"></path>
+          </svg>
+          <span>Session Log</span>
+        </button>
+      </nav>
+
+      <!-- Header Quick Actions -->
+      <div class="header-actions">
+        <button id="btn-open-settings" class="btn-icon" title="Coaching & AI Settings" aria-label="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+      <!-- VIEW 1: PRACTICE ROOM -->
+      <section id="view-practice" class="practice-container">
+        <!-- Topic Presentation Card -->
+        <article class="topic-hero-card">
+          <div class="topic-meta-row">
+            <span id="current-topic-category" class="category-tag">Technology & Society</span>
+            <div style="display: flex; gap: 8px;">
+              <button id="btn-speak-question" class="btn btn-secondary btn-sm" title="Listen to question">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+                <span>Read to Me</span>
+              </button>
+              <button id="btn-change-topic" class="btn btn-outline btn-sm">
+                <span>Browse Topics</span>
+              </button>
+            </div>
+          </div>
+
+          <h2 id="current-topic-title" class="topic-main-title">AI in the Modern Classroom</h2>
+
+          <div class="question-box">
+            <p id="current-topic-question" class="question-text">
+              Do you believe artificial intelligence tools like ChatGPT enhance student critical thinking, or do they undermine authentic learning? Explain your stance with real-world examples.
+            </p>
+          </div>
+
+          <div class="guidance-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span id="current-topic-guidance">Structure your response with a clear thesis, at least one counterargument, and a practical proposal.</span>
+          </div>
+
+          <!-- Key Recommended Vocabulary -->
+          <div class="key-vocab-section">
+            <span class="vocab-label">Target Vocabulary:</span>
+            <div id="current-topic-vocab" class="vocab-chips">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </article>
+
+        <!-- AI Coach Visualizer & Stage -->
+        <div class="coach-stage">
+          <div class="coach-orb-container">
+            <div id="coach-orb" class="coach-orb idle"></div>
+          </div>
+          <p id="coach-status-text" class="coach-status-text">Ready when you are. Press Start Speaking or Spacebar.</p>
+          
+          <div class="visualizer-wrapper">
+            <canvas id="audio-visualizer-canvas" width="600" height="70"></canvas>
+          </div>
+        </div>
+
+        <!-- Live Speaking & Interaction Deck -->
+        <article class="speaking-deck">
+          <div class="deck-header-row">
+            <div class="deck-metrics">
+              <span id="word-count-badge" class="metric-badge">0 words</span>
+              <span id="timer-display" class="metric-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                02:00
+              </span>
+            </div>
+            <div>
+              <button id="btn-toggle-text-input" class="btn btn-outline btn-xs" title="Switch to typed input">
+                Keyboard Mode
+              </button>
+              <button id="btn-clear-transcript" class="btn btn-outline btn-xs" title="Reset current speech">
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- Real-Time Speech Recognition Transcript Box -->
+          <div id="live-transcript-box" class="transcript-display-box" role="region" aria-live="polite">
+            <span class="text-muted italic">Click "Start Speaking" or use your microphone to begin your answer...</span>
+          </div>
+
+          <!-- Fallback Collapsible Typed Input -->
+          <div id="text-input-container" class="text-input-wrapper hidden">
+            <textarea id="text-input-fallback" class="text-fallback-area" placeholder="Type your spoken thoughts here if you prefer not to use voice..."></textarea>
+          </div>
+
+          <!-- Deck Action Buttons -->
+          <div class="deck-controls-row">
+            <div class="mic-primary-group">
+              <button id="btn-toggle-mic" class="btn btn-primary btn-mic-main" type="button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="23"></line>
+                  <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+                <span>Start Speaking</span>
+              </button>
+
+              <button id="btn-submit-answer" class="btn btn-secondary" type="button">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Evaluate Response</span>
+              </button>
+            </div>
+
+            <span class="form-hint">Tip: Press <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">Spacebar</kbd> to toggle microphone</span>
+          </div>
+        </article>
+
+        <!-- Dynamic Feedback & Coaching Analysis Section -->
+        <section id="feedback-section" class="feedback-container">
+          <!-- Placeholder prior to answering -->
+          <div id="feedback-placeholder" class="feedback-placeholder">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <p>Your comprehensive speaking breakdown will appear here after you submit your spoken answer.</p>
+            <p class="form-hint" style="margin-top: 4px;">Includes exact grammar corrections, pronunciation cues, vocabulary elevates, and deep idea development suggestions.</p>
+          </div>
+
+          <!-- Active Feedback Content (Populated on Submit) -->
+          <div id="feedback-content" class="feedback-content-card hidden">
+            <!-- Overall Score Banner -->
+            <div class="score-banner">
+              <div class="score-banner-left">
+                <span id="overall-band-badge" class="overall-band-badge">Band 7.5 / 9.0</span>
+                <div>
+                  <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 2px;">Coaching Assessment</h3>
+                  <p id="summary-comment" class="summary-comment">Well-structured response with coherent logic and good conversational confidence.</p>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-replay-feedback" class="btn btn-secondary btn-sm" title="Replay coach audio advice">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  </svg>
+                  <span>Hear Coach Advice</span>
+                </button>
+                <button id="btn-next-topic" class="btn btn-primary btn-sm">Next Topic ➔</button>
+              </div>
+            </div>
+
+            <!-- 4-Pillar Coaching Rubric Grid -->
+            <div class="rubric-grid">
+              <!-- Pillar 1: Grammar Range & Accuracy -->
+              <div class="rubric-card">
+                <div class="rubric-card-header">
+                  <div class="rubric-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                      <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                  </div>
+                  <h4 class="rubric-title">Grammar Precision & Corrections</h4>
+                </div>
+                <div id="grammar-mistakes-list">
+                  <!-- Grammar cards rendered dynamically -->
+                </div>
+              </div>
+
+              <!-- Pillar 2: Pronunciation & Delivery -->
+              <div class="rubric-card">
+                <div class="rubric-card-header">
+                  <div class="rubric-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    </svg>
+                  </div>
+                  <h4 class="rubric-title">Pronunciation & Delivery</h4>
+                </div>
+                <div id="pronunciation-content">
+                  <!-- Pacing, fillers, phonetic tips rendered dynamically -->
+                </div>
+              </div>
+
+              <!-- Pillar 3: Content Relevance & Vocabulary Upgrades -->
+              <div class="rubric-card">
+                <div class="rubric-card-header">
+                  <div class="rubric-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                  </div>
+                  <h4 class="rubric-title">Content & Vocabulary Upgrades</h4>
+                </div>
+                <div id="vocabulary-content">
+                  <!-- Lexical upgrades rendered dynamically -->
+                </div>
+              </div>
+
+              <!-- Pillar 4: IDEA DEVELOPMENT & THOUGHT EXPANSION (Crucial user requirement) -->
+              <div class="rubric-card highlight-card">
+                <div class="rubric-card-header">
+                  <div class="rubric-icon" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="9" y1="18" x2="15" y2="18"></line>
+                      <line x1="10" y1="22" x2="14" y2="22"></line>
+                      <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="rubric-title" style="color: #6ee7b7;">Idea Development & Thought Expansion</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">How to enrich, deepen, and substantiate your points with novel angles</p>
+                  </div>
+                </div>
+
+                <ol id="idea-development-list" class="idea-development-list">
+                  <!-- Ideas rendered dynamically -->
+                </ol>
+
+                <div class="model-response-box">
+                  <div class="model-response-title">Model Advanced Expression (Mastery Level)</div>
+                  <p id="model-response-text" class="model-response-text">
+                    "Loading exemplary structure..."
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Follow-up Question Card -->
+            <div id="follow-up-card" class="follow-up-card hidden">
+              <div class="follow-up-text-group">
+                <span class="follow-up-badge">Coaching Follow-Up Challenge</span>
+                <p id="follow-up-question-text" class="follow-up-question"></p>
+              </div>
+              <button id="btn-answer-follow-up" class="btn btn-primary">
+                <span>Practice This Follow-Up</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- VIEW 2: TOPICS EXPLORER -->
+      <section id="view-topics" class="hidden">
+        <div class="topics-view-header">
+          <div>
+            <h2 style="font-family: var(--font-display); font-size: 1.6rem; color: #fff; margin-bottom: 4px;">Speaking Topics & Prompts</h2>
+            <p class="text-muted">Choose from curated coaching prompts designed to challenge grammar, vocabulary, and argument structure.</p>
+          </div>
+          <div class="topics-filter-group">
+            <select id="category-filter" class="select-filter" aria-label="Filter by category">
+              <option value="all">All Categories</option>
+              <option value="Technology & Society">Technology & Society</option>
+              <option value="Workplace & Leadership">Workplace & Leadership</option>
+              <option value="Environment & Sustainability">Environment & Sustainability</option>
+              <option value="Personal Psychology & Habits">Personal Psychology & Habits</option>
+              <option value="Culture & Global Perspectives">Culture & Global Perspectives</option>
+            </select>
+            <button id="btn-open-custom-topic" class="btn btn-primary btn-sm">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Create Custom Topic</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="topics-grid" class="topics-grid">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- VIEW 3: SESSION LOG & HISTORY -->
+      <section id="view-history" class="hidden">
+        <div class="history-view-header">
+          <div>
+            <h2 style="font-family: var(--font-display); font-size: 1.6rem; color: #fff; margin-bottom: 4px;">Speaking Session History</h2>
+            <p class="text-muted">Review your past responses, score trajectories, and coaching feedback logs.</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button id="btn-export-report" class="btn btn-secondary btn-sm">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Export Progress Report</span>
+            </button>
+            <button id="btn-clear-history" class="btn btn-outline btn-sm">
+              Clear All Logs
+            </button>
+          </div>
+        </div>
+
+        <div id="history-sessions-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+    </main>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="settings-title" class="modal-title">Coach & AI Settings</h3>
+          <button id="btn-close-settings" class="btn-icon" aria-label="Close modal">✕</button>
+        </div>
+        <div class="modal-body">
+          <!-- AI Provider Selection -->
+          <div class="form-group">
+            <label class="form-label" for="select-provider">AI Coach Engine</label>
+            <select id="select-provider" class="form-select">
+              <option value="builtin">Built-in Intelligent Coach (No API Key Required)</option>
+              <option value="gemini">Google Gemini (Recommended - Fast & Analytical)</option>
+              <option value="openai">OpenAI (GPT-4o / GPT-4o-mini)</option>
+              <option value="groq">Groq (Ultra Fast Llama 3.3)</option>
+              <option value="ollama">Ollama (Local Private Model)</option>
+            </select>
+            <span class="form-hint">The Built-in Engine works instantly offline. Enter an API key for deep cloud LLM reasoning.</span>
+          </div>
+
+          <!-- Provider API Keys -->
+          <div id="group-gemini-key" class="form-group" style="display: none;">
+            <label class="form-label" for="input-gemini-key">Google Gemini API Key</label>
+            <input type="password" id="input-gemini-key" class="form-input" placeholder="AIzaSy...">
+            <span class="form-hint">Get a free key from Google AI Studio. Stored strictly in your browser.</span>
+          </div>
+
+          <div id="group-openai-key" class="form-group" style="display: none;">
+            <label class="form-label" for="input-openai-key">OpenAI API Key</label>
+            <input type="password" id="input-openai-key" class="form-input" placeholder="sk-...">
+          </div>
+
+          <div id="group-groq-key" class="form-group" style="display: none;">
+            <label class="form-label" for="input-groq-key">Groq API Key</label>
+            <input type="password" id="input-groq-key" class="form-input" placeholder="gsk_...">
+          </div>
+
+          <div id="group-ollama-url" class="form-group" style="display: none;">
+            <label class="form-label" for="input-ollama-endpoint">Ollama Endpoint</label>
+            <input type="text" id="input-ollama-endpoint" class="form-input" value="http://localhost:11434/api/generate">
+          </div>
+
+          <!-- Coaching Persona -->
+          <div class="form-group">
+            <label class="form-label" for="select-persona">Coach Persona & Style</label>
+            <select id="select-persona" class="form-select">
+              <option value="constructive">Constructive & Encouraging (Friendly, builds confidence)</option>
+              <option value="academic">Academic Mentor (Rigorous, analytical, deep precision)</option>
+              <option value="executive">Executive Coach (Concise, punchy, persuasive clarity)</option>
+              <option value="socratic">Socratic Questioner (Challenges premises and assumptions)</option>
+            </select>
+          </div>
+
+          <!-- Target Proficiency Level -->
+          <div class="form-group">
+            <label class="form-label" for="select-proficiency">Target Proficiency Level</label>
+            <select id="select-proficiency" class="form-select">
+              <option value="b1-b2">Intermediate (CEFR B1-B2 / Band 5.5 - 6.5)</option>
+              <option value="b2-c1" selected>Advanced (CEFR B2-C1 / Band 7.0 - 8.0)</option>
+              <option value="c1-c2">Mastery (CEFR C1-C2 / Band 8.5 - 9.0)</option>
+            </select>
+          </div>
+
+          <!-- Speech Synthesis Voice -->
+          <div class="form-group">
+            <label class="form-label" for="select-voice">Coach Speech Voice</label>
+            <select id="select-voice" class="form-select">
+              <!-- Populated dynamically with available system voices -->
+            </select>
+          </div>
+
+          <!-- Speech Rate -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between;">
+              <label class="form-label" for="input-speech-rate">Coach Speaking Speed</label>
+              <span id="rate-val-display" class="form-hint" style="color: #fff; font-weight: 600;">1.0x</span>
+            </div>
+            <input type="range" id="input-speech-rate" min="0.75" max="1.3" step="0.05" value="1.0" class="form-input" style="padding: 4px 0;">
+          </div>
+
+          <!-- Auto-read Feedback Toggle -->
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="check-auto-read" checked style="width: 18px; height: 18px; accent-color: var(--primary);">
+            <label class="form-label" for="check-auto-read" style="cursor: pointer;">Automatically speak coaching feedback out loud after evaluation</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-save-settings" class="btn btn-primary" type="button">Save Preferences</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOM TOPIC MODAL -->
+    <div id="custom-topic-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="custom-topic-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="custom-topic-title" class="modal-title">Create Custom Speaking Topic</h3>
+          <button id="btn-close-custom-topic" class="btn-icon" aria-label="Close modal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="input-custom-title">Topic Title</label>
+            <input type="text" id="input-custom-title" class="form-input" placeholder="e.g. Space Exploration vs Climate Funding">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="input-custom-category">Category</label>
+            <input type="text" id="input-custom-category" class="form-input" placeholder="e.g. Science & Ethics">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="input-custom-question">Speaking Prompt / Question</label>
+            <textarea id="input-custom-question" class="text-fallback-area" style="min-height: 90px;" placeholder="What specific question should the student answer?"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="input-custom-vocab">Key Vocabulary (comma-separated)</label>
+            <input type="text" id="input-custom-vocab" class="form-input" placeholder="e.g. allocation, interplanetary, fiscal, pressing">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-save-custom-topic" class="btn btn-primary" type="button">Create & Practice Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Element -->
+    <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/topics.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/speech.js"></script>
+  <script src="js/aiCoach.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
