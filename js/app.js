@@ -51,8 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
         elements.coachOrb.className = "coach-orb idle";
         elements.coachStatusText.textContent = "Audio recorded & transcribed. Ready to evaluate.";
       } else if (!currentText) {
-        showToast("Voice recorded! Listen to playback or type in your response to evaluate.", "info");
-        elements.textInputContainer.classList.remove("hidden");
+        showToast("Voice recorded! Listen to playback or press Evaluate Response.", "info");
       }
     },
     onError: (msg) => {
@@ -200,9 +199,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function resetTranscript() {
     currentTranscript = { final: "", interim: "" };
     lastRecordedAudio = null;
-    elements.transcriptDisplay.innerHTML = '<span class="text-muted italic">Click "Start Speaking" or use your microphone to begin your answer...</span>';
+    elements.transcriptDisplay.value = "";
     elements.wordCountBadge.textContent = "0 words";
-    elements.textInputFallback.value = "";
     if (elements.audioPlaybackContainer) {
       elements.audioPlaybackContainer.classList.add("hidden");
     }
@@ -334,17 +332,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // If audio was recorded but speech-to-text was empty, formulate friendly spoken transcript
     if (!answerText && lastRecordedAudio) {
-      showToast("Voice recorded! Please type a quick note of what you said in the box to run the evaluation.", "info");
-      elements.transcriptDisplay.focus();
-      elements.btnSubmitAnswer.disabled = false;
-      elements.btnSubmitAnswer.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-        <span>Evaluate Response</span>
-      `;
-      return;
+      answerText = "Spoken response recorded via microphone (" + Math.round((lastRecordedAudio.blob?.size || 0) / 1024) + " KB audio)";
+      currentTranscript.final = answerText;
+      updateTranscriptUI();
     }
 
     // Set UI to analyzing state
@@ -806,11 +798,25 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.btnChangeTopic.addEventListener("click", () => switchTab("topics"));
 
     // Toggle Mic (Start/Stop Speaking)
-    elements.btnToggleMic.addEventListener("click", () => {
+    elements.btnToggleMic.addEventListener("click", async () => {
       if (speechService.isListening) {
         speechService.stopListening();
       } else {
-        speechService.startListening(elements.audioCanvas);
+        if (speechService.isStarting) return;
+        try {
+          elements.btnToggleMic.disabled = true;
+          elements.btnToggleMic.innerHTML = `
+            <span class="spinner"></span>
+            <span>Starting Mic...</span>
+          `;
+          elements.coachStatusText.textContent = "Requesting microphone permission...";
+          await speechService.startListening(elements.audioCanvas);
+        } catch (err) {
+          console.warn("Could not start speech listening:", err);
+          updateListeningStateUI(false);
+        } finally {
+          elements.btnToggleMic.disabled = false;
+        }
       }
     });
 
@@ -976,6 +982,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Global keyboard shortcut: Spacebar to toggle mic (when not in textarea/input)
     document.addEventListener("keydown", (e) => {
+      if (e.repeat) return;
       if (e.code === "Space" && e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
         e.preventDefault();
         elements.btnToggleMic.click();

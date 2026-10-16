@@ -152,6 +152,12 @@ class SpeechService {
       this.stopSpeaking();
     }
 
+    if (this.isStarting || this.isListening) {
+      console.warn("SpeechService: already starting or listening");
+      return;
+    }
+    this.isStarting = true;
+
     this.finalTranscript = "";
     this.audioChunks = [];
 
@@ -160,30 +166,48 @@ class SpeechService {
       this.canvasCtx = canvasElement.getContext("2d");
     }
 
-    // 1. Acquire Microphone Stream
+    // 1. Acquire Microphone Stream with Timeout Guard
     try {
-      if (!this.audioCtx) {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Your browser does not support microphone capture. Please use Chrome, Edge, or Firefox.");
+      }
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Microphone permission timed out. Please check your browser address bar to Allow.")), 7000);
+      });
+
+      this.mediaStream = await Promise.race([
+        navigator.mediaDevices.getUserMedia({ audio: true, video: false }),
+        timeoutPromise
+      ]);
+
+      // 2. Setup Web Audio Analyser (isolated in safe block)
+      try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
-        this.audioCtx = new AudioContext();
+        if (AudioContext) {
+          if (!this.audioCtx || this.audioCtx.state === "closed") {
+            this.audioCtx = new AudioContext();
+          }
+          if (this.audioCtx.state === "suspended") {
+            this.audioCtx.resume().catch(() => {});
+          }
+
+          const source = this.audioCtx.createMediaStreamSource(this.mediaStream);
+          this.analyser = this.audioCtx.createAnalyser();
+          this.analyser.fftSize = 256;
+          this.analyser.smoothingTimeConstant = 0.8;
+          source.connect(this.analyser);
+          
+          const bufferLength = this.analyser.frequencyBinCount;
+          this.dataArray = new Uint8Array(bufferLength);
+          this.startVisualizer();
+        }
+      } catch (audioErr) {
+        console.warn("AudioContext visualizer notice (voice will still record):", audioErr);
+        this.startSyntheticVisualizer();
       }
-      if (this.audioCtx.state === "suspended") {
-        await this.audioCtx.resume();
-      }
 
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-
-      // Connect to Web Audio Analyser
-      const source = this.audioCtx.createMediaStreamSource(this.mediaStream);
-      this.analyser = this.audioCtx.createAnalyser();
-      this.analyser.fftSize = 256;
-      this.analyser.smoothingTimeConstant = 0.8;
-      source.connect(this.analyser);
-      
-      const bufferLength = this.analyser.frequencyBinCount;
-      this.dataArray = new Uint8Array(bufferLength);
-      this.startVisualizer();
-
-      // 2. Start HTML5 MediaRecorder (Local offline voice capture)
+      // 3. Start HTML5 MediaRecorder (Local offline voice capture)
       try {
         let mimeType = "";
         if (typeof MediaRecorder !== "undefined") {
@@ -225,23 +249,28 @@ class SpeechService {
         console.warn("MediaRecorder failed:", recErr);
       }
 
+      // 4. Mark listening as active
+      this.isListening = true;
+      this.callbacks.onListeningStateChange(true);
+
+      // 5. Start Browser SpeechRecognition in parallel if available
+      if (this.recognition) {
+        try {
+          this.recognition.start();
+        } catch (e) {
+          console.warn("SpeechRecognition start notice:", e.message);
+        }
+      }
+
     } catch (err) {
       console.warn("Could not acquire microphone:", err);
-      this.callbacks.onError("Microphone error: " + (err.message || "Permission denied"));
-      this.startSyntheticVisualizer();
-      return;
-    }
-
-    // 3. Start Browser SpeechRecognition in parallel
-    this.isListening = true;
-    this.callbacks.onListeningStateChange(true);
-
-    if (this.recognition) {
-      try {
-        this.recognition.start();
-      } catch (e) {
-        console.warn("SpeechRecognition start ignored:", e.message);
-      }
+      this.isListening = false;
+      this.callbacks.onListeningStateChange(false);
+      this.callbacks.onError("Microphone access notice: " + (err.message || "Permission issue"));
+      this.stopVisualizer();
+      throw err;
+    } finally {
+      this.isStarting = false;
     }
   }
 
