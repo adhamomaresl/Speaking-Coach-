@@ -115,6 +115,10 @@ document.addEventListener("DOMContentLoaded", () => {
     inputSpeechRate: document.getElementById("input-speech-rate"),
     rateValueDisplay: document.getElementById("rate-val-display"),
     checkAutoRead: document.getElementById("check-auto-read"),
+    inputSupabaseUrl: document.getElementById("input-supabase-url"),
+    inputSupabaseKey: document.getElementById("input-supabase-key"),
+    btnTestSupabase: document.getElementById("btn-test-supabase"),
+    supabaseStatusBadge: document.getElementById("supabase-status-badge"),
 
     // Custom Topic Modal
     customTopicModal: document.getElementById("custom-topic-modal"),
@@ -306,6 +310,9 @@ document.addEventListener("DOMContentLoaded", () => {
         timestamp: new Date().toISOString()
       });
       StorageManager.saveSession(activeSession);
+      if (window.supabaseServiceInstance && window.supabaseServiceInstance.isConfigured()) {
+        window.supabaseServiceInstance.syncSession(activeSession);
+      }
       renderHistoryList();
 
       // Read feedback out loud if enabled
@@ -511,8 +518,23 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.inputSpeechRate.value = preferences.speechRate || 1.0;
     elements.rateValueDisplay.textContent = `${preferences.speechRate || 1.0}x`;
     elements.checkAutoRead.checked = preferences.autoReadFeedback !== false;
+    elements.inputSupabaseUrl.value = preferences.supabaseUrl || "";
+    elements.inputSupabaseKey.value = preferences.supabaseKey || "";
+    updateSupabaseBadge();
 
     updateProviderFieldVisibility();
+  }
+
+  function updateSupabaseBadge() {
+    if (preferences.supabaseUrl && preferences.supabaseKey) {
+      elements.supabaseStatusBadge.textContent = "Configured";
+      elements.supabaseStatusBadge.className = "badge badge-success";
+    } else {
+      elements.supabaseStatusBadge.textContent = "Not Connected";
+      elements.supabaseStatusBadge.className = "badge";
+      elements.supabaseStatusBadge.style.background = "rgba(255,255,255,0.06)";
+      elements.supabaseStatusBadge.style.color = "var(--text-dim)";
+    }
   }
 
   function updateProviderFieldVisibility() {
@@ -797,13 +819,46 @@ document.addEventListener("DOMContentLoaded", () => {
         proficiencyLevel: elements.selectProficiency.value,
         speechVoice: elements.selectVoice.value,
         speechRate: parseFloat(elements.inputSpeechRate.value),
-        autoReadFeedback: elements.checkAutoRead.checked
+        autoReadFeedback: elements.checkAutoRead.checked,
+        supabaseUrl: elements.inputSupabaseUrl.value.trim(),
+        supabaseKey: elements.inputSupabaseKey.value.trim()
       };
       preferences = StorageManager.savePreferences(updated);
       aiCoach.updatePreferences(preferences);
       speechService.setVoice(preferences.speechVoice);
+      if (window.supabaseServiceInstance) {
+        window.supabaseServiceInstance.initClient();
+      }
+      updateSupabaseBadge();
       elements.settingsModal.classList.add("hidden");
       showToast("Coaching preferences saved!", "success");
+    });
+
+    // Test Supabase Connection
+    elements.btnTestSupabase.addEventListener("click", async () => {
+      const url = elements.inputSupabaseUrl.value.trim();
+      const key = elements.inputSupabaseKey.value.trim();
+      if (!url || !key) {
+        showToast("Please enter both Supabase Project URL and Anon Key.", "warning");
+        return;
+      }
+      elements.btnTestSupabase.disabled = true;
+      elements.btnTestSupabase.innerHTML = `<span class="spinner"></span> Testing...`;
+      try {
+        const res = await window.supabaseServiceInstance.testConnection(url, key);
+        if (res.success) {
+          showToast("Successfully connected to Supabase database!", "success");
+          elements.supabaseStatusBadge.textContent = "Connected";
+          elements.supabaseStatusBadge.className = "badge badge-success";
+        } else {
+          showToast("Supabase connection failed: " + res.error, "danger");
+        }
+      } catch (e) {
+        showToast("Connection test error: " + e.message, "danger");
+      } finally {
+        elements.btnTestSupabase.disabled = false;
+        elements.btnTestSupabase.innerHTML = `<span>Test Supabase Connection</span>`;
+      }
     });
 
     // Custom Topic Modal
@@ -835,6 +890,9 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       StorageManager.saveCustomTopic(newTopic);
+      if (window.supabaseServiceInstance && window.supabaseServiceInstance.isConfigured()) {
+        window.supabaseServiceInstance.syncCustomTopic(newTopic);
+      }
       elements.customTopicModal.classList.add("hidden");
       elements.inputCustomTitle.value = "";
       elements.inputCustomQuestion.value = "";

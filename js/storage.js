@@ -21,7 +21,9 @@ const DEFAULT_PREFERENCES = {
   speechRate: 1.0,
   autoReadFeedback: true,
   autoListenAfterPrompt: false,
-  timerSeconds: 120
+  timerSeconds: 120,
+  supabaseUrl: "",
+  supabaseKey: ""
 };
 
 class StorageManager {
