@@ -23,7 +23,7 @@ const DEFAULT_PREFERENCES = {
   autoListenAfterPrompt: false,
   timerSeconds: 120,
   supabaseUrl: "",
-  supabaseKey: ""
+  supabaseKey: "sb_publishable_FTY_mD8gPlZkecFKlcBIiA__wkGkTYX"
 };
 
 class StorageManager {
