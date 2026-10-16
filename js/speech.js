@@ -48,7 +48,7 @@ class SpeechService {
     this.recognition.interimResults = true;
     this.recognition.lang = "en-US";
 
-    let finalTranscript = "";
+    this.finalTranscript = "";
 
     this.recognition.onstart = () => {
       this.isListening = true;
@@ -59,40 +59,42 @@ class SpeechService {
       let interimTranscript = "";
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript + " ";
+          this.finalTranscript += event.results[i][0].transcript + " ";
         } else {
           interimTranscript += event.results[i][0].transcript;
         }
       }
 
       this.callbacks.onTranscriptUpdate({
-        final: finalTranscript.trim(),
+        final: this.finalTranscript.trim(),
         interim: interimTranscript.trim()
       });
     };
 
     this.recognition.onerror = (event) => {
       console.error("Speech Recognition Error:", event.error);
+      let friendlyMsg = `Microphone error: ${event.error}`;
+      if (event.error === "network") {
+        if (window.location.protocol === "file:") {
+          friendlyMsg = "Browser speech recognition is restricted on local 'file://' paths. Please open via http://localhost or deploy to Vercel/GitHub Pages (https://).";
+        } else {
+          friendlyMsg = "Speech recognition network error. Please check your internet connection.";
+        }
+      } else if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        friendlyMsg = "Microphone access denied. Please click the lock or settings icon in your browser address bar and select 'Allow Microphone'.";
+      } else if (event.error === "audio-capture") {
+        friendlyMsg = "No microphone detected. Please plug in or check your audio input settings.";
+      }
+
       if (event.error !== "no-speech") {
-        this.callbacks.onError(`Microphone error: ${event.error}`);
+        this.callbacks.onError(friendlyMsg);
       }
-      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        this.stopListening();
-      }
+      this.stopListening();
     };
 
     this.recognition.onend = () => {
-      if (this.isListening) {
-        // If it stopped unintentionally while user still intended to record, restart
-        try {
-          this.recognition.start();
-        } catch (e) {
-          this.isListening = false;
-          this.callbacks.onListeningStateChange(false);
-        }
-      } else {
-        this.callbacks.onListeningStateChange(false);
-      }
+      this.isListening = false;
+      this.callbacks.onListeningStateChange(false);
     };
   }
 
