@@ -1,5 +1,5 @@
 /**
- * speech.js - Web Speech API (STT & TTS) and Web Audio API real-time visualizer
+ * speech.js - Web Speech API (STT & TTS), MediaRecorder local audio capture, and Web Audio API visualizer
  */
 class SpeechService {
   constructor(callbacks = {}) {
@@ -8,6 +8,7 @@ class SpeechService {
       onFinalTranscript: () => {},
       onListeningStateChange: () => {},
       onSpeakingStateChange: () => {},
+      onAudioRecorded: () => {},
       onError: () => {},
       ...callbacks
     };
@@ -19,6 +20,12 @@ class SpeechService {
     this.selectedVoice = null;
     this.voices = [];
     
+    // MediaRecorder local audio capture
+    this.mediaRecorder = null;
+    this.audioChunks = [];
+    this.lastRecordedBlob = null;
+    this.lastRecordedUrl = null;
+
     // Audio Visualizer members
     this.audioCtx = null;
     this.analyser = null;
@@ -31,6 +38,7 @@ class SpeechService {
 
     // Synthetic audio wave for TTS
     this.syntheticWavePhase = 0;
+    this.finalTranscript = "";
 
     this.initRecognition();
     this.initVoices();
@@ -43,59 +51,62 @@ class SpeechService {
       return;
     }
 
-    this.recognition = new SpeechRecognition();
-    this.recognition.continuous = true;
-    this.recognition.interimResults = true;
-    this.recognition.lang = "en-US";
+    try {
+      this.recognition = new SpeechRecognition();
+      this.recognition.continuous = true;
+      this.recognition.interimResults = true;
+      this.recognition.lang = "en-US";
 
-    this.finalTranscript = "";
+      this.recognition.onstart = () => {
+        this.isListening = true;
+        this.callbacks.onListeningStateChange(true);
+      };
 
-    this.recognition.onstart = () => {
-      this.isListening = true;
-      this.callbacks.onListeningStateChange(true);
-    };
-
-    this.recognition.onresult = (event) => {
-      let interimTranscript = "";
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          this.finalTranscript += event.results[i][0].transcript + " ";
-        } else {
-          interimTranscript += event.results[i][0].transcript;
+      this.recognition.onresult = (event) => {
+        let interimTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            this.finalTranscript += event.results[i][0].transcript + " ";
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
         }
-      }
 
-      this.callbacks.onTranscriptUpdate({
-        final: this.finalTranscript.trim(),
-        interim: interimTranscript.trim()
-      });
-    };
+        this.callbacks.onTranscriptUpdate({
+          final: this.finalTranscript.trim(),
+          interim: interimTranscript.trim()
+        });
+      };
 
-    this.recognition.onerror = (event) => {
-      console.error("Speech Recognition Error:", event.error);
-      let friendlyMsg = `Microphone error: ${event.error}`;
-      if (event.error === "network") {
-        if (window.location.protocol === "file:") {
-          friendlyMsg = "Browser speech recognition is restricted on local 'file://' paths. Please open via http://localhost or deploy to Vercel/GitHub Pages (https://).";
-        } else {
-          friendlyMsg = "Speech recognition network error. Please check your internet connection.";
+      this.recognition.onerror = (event) => {
+        console.warn("Speech Recognition Event:", event.error);
+        if (event.error === "network") {
+          // Do NOT cancel the user's turn! The MediaRecorder is actively capturing the voice.
+          this.callbacks.onError("Browser speech network service unavailable. Your voice is still being recorded via microphone!");
+          return;
         }
-      } else if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        friendlyMsg = "Microphone access denied. Please click the lock or settings icon in your browser address bar and select 'Allow Microphone'.";
-      } else if (event.error === "audio-capture") {
-        friendlyMsg = "No microphone detected. Please plug in or check your audio input settings.";
-      }
 
-      if (event.error !== "no-speech") {
-        this.callbacks.onError(friendlyMsg);
-      }
-      this.stopListening();
-    };
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          this.callbacks.onError("Microphone access denied. Please click the lock or settings icon in your browser address bar and select 'Allow Microphone'.");
+          this.stopListening();
+        } else if (event.error === "audio-capture") {
+          this.callbacks.onError("No microphone detected. Please plug in or check your audio input settings.");
+          this.stopListening();
+        } else if (event.error !== "no-speech") {
+          this.callbacks.onError(`Speech recognition notification: ${event.error}`);
+        }
+      };
 
-    this.recognition.onend = () => {
-      this.isListening = false;
-      this.callbacks.onListeningStateChange(false);
-    };
+      this.recognition.onend = () => {
+        // If the user is still in listening mode, we don't force stop MediaRecorder
+        if (!this.isListening) {
+          this.callbacks.onListeningStateChange(false);
+        }
+      };
+    } catch (e) {
+      console.warn("Failed to instantiate SpeechRecognition:", e);
+      this.recognition = null;
+    }
   }
 
   initVoices() {
@@ -103,10 +114,8 @@ class SpeechService {
 
     const populateVoices = () => {
       this.voices = this.synth.getVoices();
-      // Filter primarily for English voices
       const englishVoices = this.voices.filter(v => v.lang.startsWith("en"));
       
-      // Look for natural voices first (Google US English, Microsoft Natural, Samantha)
       const preferred = englishVoices.find(v => 
         v.name.includes("Natural") || 
         v.name.includes("Google") || 
@@ -143,12 +152,15 @@ class SpeechService {
       this.stopSpeaking();
     }
 
+    this.finalTranscript = "";
+    this.audioChunks = [];
+
     if (canvasElement) {
       this.canvas = canvasElement;
       this.canvasCtx = canvasElement.getContext("2d");
     }
 
-    // Try to access microphone for AudioContext visualizer
+    // 1. Acquire Microphone Stream
     try {
       if (!this.audioCtx) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -159,6 +171,8 @@ class SpeechService {
       }
 
       this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+      // Connect to Web Audio Analyser
       const source = this.audioCtx.createMediaStreamSource(this.mediaStream);
       this.analyser = this.audioCtx.createAnalyser();
       this.analyser.fftSize = 256;
@@ -168,39 +182,108 @@ class SpeechService {
       const bufferLength = this.analyser.frequencyBinCount;
       this.dataArray = new Uint8Array(bufferLength);
       this.startVisualizer();
+
+      // 2. Start HTML5 MediaRecorder (Local offline voice capture)
+      try {
+        let mimeType = "";
+        if (typeof MediaRecorder !== "undefined") {
+          if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+            mimeType = "audio/webm;codecs=opus";
+          } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+            mimeType = "audio/webm";
+          } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+            mimeType = "audio/mp4";
+          }
+
+          const recorderOptions = mimeType ? { mimeType } : {};
+          this.mediaRecorder = new MediaRecorder(this.mediaStream, recorderOptions);
+
+          this.mediaRecorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+              this.audioChunks.push(e.data);
+            }
+          };
+
+          this.mediaRecorder.onstop = async () => {
+            const finalMime = this.mediaRecorder.mimeType || mimeType || "audio/webm";
+            this.lastRecordedBlob = new Blob(this.audioChunks, { type: finalMime });
+            this.lastRecordedUrl = URL.createObjectURL(this.lastRecordedBlob);
+
+            const base64Audio = await this.blobToBase64(this.lastRecordedBlob);
+
+            this.callbacks.onAudioRecorded({
+              blob: this.lastRecordedBlob,
+              url: this.lastRecordedUrl,
+              mimeType: finalMime,
+              base64: base64Audio
+            });
+          };
+
+          this.mediaRecorder.start(250);
+        }
+      } catch (recErr) {
+        console.warn("MediaRecorder failed:", recErr);
+      }
+
     } catch (err) {
-      console.warn("Could not attach audio visualizer to microphone:", err);
-      // Still proceed with speech recognition even if visualizer fails
+      console.warn("Could not acquire microphone:", err);
+      this.callbacks.onError("Microphone error: " + (err.message || "Permission denied"));
       this.startSyntheticVisualizer();
+      return;
     }
+
+    // 3. Start Browser SpeechRecognition in parallel
+    this.isListening = true;
+    this.callbacks.onListeningStateChange(true);
 
     if (this.recognition) {
       try {
-        this.isListening = true;
         this.recognition.start();
-        this.callbacks.onListeningStateChange(true);
       } catch (e) {
-        console.warn("Recognition already active or failed to start", e);
+        console.warn("SpeechRecognition start ignored:", e.message);
       }
-    } else {
-      this.callbacks.onError("Speech recognition is not available in this browser. You can type your response instead.");
     }
   }
 
   stopListening() {
     this.isListening = false;
+
+    // Stop MediaRecorder
+    if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
+      try {
+        this.mediaRecorder.stop();
+      } catch (e) {}
+    }
+
+    // Stop Browser Recognition
     if (this.recognition) {
       try {
         this.recognition.stop();
       } catch (e) {}
     }
+
     this.callbacks.onListeningStateChange(false);
 
+    // Stop Media Stream Tracks
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());
       this.mediaStream = null;
     }
     this.stopVisualizer();
+  }
+
+  blobToBase64(blob) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result;
+        // strip data url prefix
+        const base64 = result.includes(",") ? result.split(",")[1] : result;
+        resolve(base64);
+      };
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(blob);
+    });
   }
 
   speak(text, options = {}) {
@@ -211,7 +294,6 @@ class SpeechService {
 
     this.stopSpeaking();
 
-    // Clean text of markdown asterisks or special tokens for smoother TTS
     const cleanText = text
       .replace(/\*\*(.*?)\*\*/g, "$1")
       .replace(/\*(.*?)\*/g, "$1")
@@ -288,7 +370,6 @@ class SpeechService {
           const value = this.dataArray[i * step] || 0;
           const barHeight = Math.max(4, (value / 255) * height * 0.85);
 
-          // Glowing gradient
           const gradient = this.canvasCtx.createLinearGradient(0, height, 0, height - barHeight);
           gradient.addColorStop(0, "rgba(59, 130, 246, 0.4)");
           gradient.addColorStop(0.5, "rgba(139, 92, 246, 0.8)");
@@ -298,7 +379,6 @@ class SpeechService {
           const x = i * (barWidth + 3);
           const y = (height - barHeight) / 2;
 
-          // Rounded bar caps with fallback
           this.canvasCtx.beginPath();
           if (typeof this.canvasCtx.roundRect === "function") {
             this.canvasCtx.roundRect(x, y, barWidth, barHeight, 4);
@@ -330,7 +410,6 @@ class SpeechService {
       const barWidth = (width / barCount) - 3;
 
       for (let i = 0; i < barCount; i++) {
-        // Create an organic oscillating wave
         const wave = Math.sin(this.syntheticWavePhase + i * 0.25) * Math.cos(this.syntheticWavePhase * 0.5 + i * 0.1);
         const intensity = (wave + 1) / 2;
         const barHeight = Math.max(6, intensity * height * 0.7);

@@ -112,18 +112,76 @@ You MUST respond with pure, valid JSON (no markdown fence, no backticks, no expl
 }`;
   }
 
+  async transcribeAudio(audioBlob) {
+    // 1. Try Groq Whisper if Groq key exists
+    if (this.preferences.groqKey) {
+      try {
+        const formData = new FormData();
+        formData.append("file", audioBlob, "speech.webm");
+        formData.append("model", "whisper-large-v3");
+        formData.append("response_format", "json");
+
+        const res = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${this.preferences.groqKey.trim()}` },
+          body: formData
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.text) return data.text.trim();
+        }
+      } catch (e) {
+        console.warn("Groq Whisper transcription failed:", e);
+      }
+    }
+
+    // 2. Try OpenAI Whisper if OpenAI key exists
+    if (this.preferences.openaiKey) {
+      try {
+        const formData = new FormData();
+        formData.append("file", audioBlob, "speech.webm");
+        formData.append("model", "whisper-1");
+
+        const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${this.preferences.openaiKey.trim()}` },
+          body: formData
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.text) return data.text.trim();
+        }
+      } catch (e) {
+        console.warn("OpenAI Whisper transcription failed:", e);
+      }
+    }
+
+    return null;
+  }
+
   // --- Gemini API ---
   async evaluateWithGemini(context) {
     const key = this.preferences.geminiKey.trim();
     const systemPrompt = this.getSystemPrompt(context);
-    const userPrompt = `Topic Question: "${context.topic.question}"\nTopic Category: ${context.topic.category}\nStudent's Spoken Answer:\n"${context.studentTranscript}"\n\nAnalyze and coach this student according to the JSON schema.`;
+    const userPrompt = `Topic Question: "${context.topic.question}"\nTopic Category: ${context.topic.category}\nStudent's Spoken Answer:\n"${context.studentTranscript || "Please listen to the attached audio"}"\n\nAnalyze and coach this student according to the JSON schema.`;
+
+    const parts = [{ text: `${systemPrompt}\n\n${userPrompt}` }];
+
+    if (context.audioBase64) {
+      parts.push({
+        inlineData: {
+          mimeType: context.audioMimeType || "audio/webm",
+          data: context.audioBase64
+        }
+      });
+    }
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
     const payload = {
       contents: [
         {
           role: "user",
-          parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
+          parts: parts
         }
       ],
       generationConfig: {

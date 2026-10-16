@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let timerRemaining = preferences.timerSeconds || 120;
   let isTimerRunning = false;
   let currentTranscript = { final: "", interim: "" };
+  let lastRecordedAudio = null;
 
   // --- Core Services ---
   const speechService = new SpeechService({
@@ -29,6 +30,30 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     onSpeakingStateChange: (speaking) => {
       updateSpeakingStateUI(speaking);
+    },
+    onAudioRecorded: async ({ blob, url, base64, mimeType }) => {
+      lastRecordedAudio = { blob, url, base64, mimeType };
+      elements.audioPlaybackPlayer.src = url;
+      elements.audioPlaybackContainer.classList.remove("hidden");
+
+      // Auto-transcribe if transcript was empty due to browser network restriction
+      const currentText = (currentTranscript.final + " " + currentTranscript.interim).trim();
+      if (!currentText && (preferences.groqKey || preferences.openaiKey)) {
+        showToast("Transcribing recorded voice using AI...", "info");
+        elements.coachOrb.className = "coach-orb analyzing";
+        elements.coachStatusText.textContent = "Transcribing spoken audio with AI Whisper...";
+        const transcribed = await aiCoach.transcribeAudio(blob);
+        if (transcribed) {
+          currentTranscript.final = transcribed;
+          updateTranscriptUI();
+          showToast("Voice transcribed successfully!", "success");
+        }
+        elements.coachOrb.className = "coach-orb idle";
+        elements.coachStatusText.textContent = "Audio recorded & transcribed. Ready to evaluate.";
+      } else if (!currentText) {
+        showToast("Voice recorded! Listen to playback or type in your response to evaluate.", "info");
+        elements.textInputContainer.classList.remove("hidden");
+      }
     },
     onError: (msg) => {
       showToast(msg, "warning");
@@ -72,6 +97,8 @@ document.addEventListener("DOMContentLoaded", () => {
     textInputFallback: document.getElementById("text-input-fallback"),
     btnToggleTextInput: document.getElementById("btn-toggle-text-input"),
     textInputContainer: document.getElementById("text-input-container"),
+    audioPlaybackContainer: document.getElementById("audio-playback-container"),
+    audioPlaybackPlayer: document.getElementById("audio-playback-player"),
 
     // Feedback Container
     feedbackSection: document.getElementById("feedback-section"),
@@ -175,9 +202,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function resetTranscript() {
     currentTranscript = { final: "", interim: "" };
+    lastRecordedAudio = null;
     elements.transcriptDisplay.innerHTML = '<span class="text-muted italic">Click "Start Speaking" or use your microphone to begin your answer...</span>';
     elements.wordCountBadge.textContent = "0 words";
     elements.textInputFallback.value = "";
+    if (elements.audioPlaybackContainer) {
+      elements.audioPlaybackContainer.classList.add("hidden");
+    }
+    if (elements.audioPlaybackPlayer) {
+      elements.audioPlaybackPlayer.src = "";
+    }
   }
 
   function resetTimer() {
@@ -281,8 +315,49 @@ document.addEventListener("DOMContentLoaded", () => {
       answerText = elements.textInputFallback.value.trim();
     }
 
-    if (!answerText || answerText.length < 5) {
+    // If answerText is empty but audio was recorded, attempt AI transcription
+    if (!answerText && lastRecordedAudio?.blob && (preferences.groqKey || preferences.openaiKey)) {
+      elements.coachOrb.className = "coach-orb analyzing";
+      elements.coachStatusText.textContent = "Transcribing your audio with AI Whisper...";
+      elements.btnSubmitAnswer.disabled = true;
+      elements.btnSubmitAnswer.innerHTML = `<span class="spinner"></span> Transcribing...`;
+
+      try {
+        const transcribed = await aiCoach.transcribeAudio(lastRecordedAudio.blob);
+        if (transcribed) {
+          answerText = transcribed;
+          currentTranscript.final = transcribed;
+          updateTranscriptUI();
+        }
+      } catch (e) {
+        console.warn("Audio transcription error:", e);
+      }
+    }
+
+    // If still no text and no audio
+    if (!answerText && !lastRecordedAudio) {
       showToast("Please speak or type a response first before evaluating.", "warning");
+      elements.btnSubmitAnswer.disabled = false;
+      elements.btnSubmitAnswer.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Evaluate Response</span>
+      `;
+      return;
+    }
+
+    if (!answerText && lastRecordedAudio && preferences.provider !== "gemini") {
+      showToast("Audio recorded! Please type a quick note of what you said below to run local evaluation.", "info");
+      elements.textInputContainer.classList.remove("hidden");
+      elements.textInputFallback.focus();
+      elements.btnSubmitAnswer.disabled = false;
+      elements.btnSubmitAnswer.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Evaluate Response</span>
+      `;
       return;
     }
 
@@ -296,6 +371,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const evaluation = await aiCoach.evaluateResponse({
         topic: currentTopic,
         studentTranscript: answerText,
+        audioBase64: lastRecordedAudio?.base64 || null,
+        audioMimeType: lastRecordedAudio?.mimeType || "audio/webm",
         turnIndex: currentTurnIndex
       });
 

@@ -161,6 +161,15 @@
             <span class="text-muted italic">Click "Start Speaking" or use your microphone to begin your answer...</span>
           </div>
 
+          <!-- Recorded Audio Playback Bar -->
+          <div id="audio-playback-container" class="hidden" style="margin-bottom: 16px; padding: 10px 16px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="badge badge-success">Audio Captured</span>
+              <span style="font-size: 0.85rem; color: #cbd5e1;">Review your voice recording:</span>
+            </div>
+            <audio id="audio-playback-player" controls style="height: 34px; max-width: 300px;"></audio>
+          </div>
+
           <!-- Fallback Collapsible Typed Input -->
           <div id="text-input-container" class="text-input-wrapper hidden">
             <textarea id="text-input-fallback" class="text-fallback-area" placeholder="Type your spoken thoughts here if you prefer not to use voice..."></textarea>
