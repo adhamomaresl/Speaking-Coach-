@@ -400,9 +400,9 @@ class SpeechService {
           const barHeight = Math.max(4, (value / 255) * height * 0.85);
 
           const gradient = this.canvasCtx.createLinearGradient(0, height, 0, height - barHeight);
-          gradient.addColorStop(0, "rgba(59, 130, 246, 0.4)");
-          gradient.addColorStop(0.5, "rgba(139, 92, 246, 0.8)");
-          gradient.addColorStop(1, "rgba(236, 72, 153, 1)");
+          gradient.addColorStop(0, "rgba(2, 132, 199, 0.5)");
+          gradient.addColorStop(0.5, "rgba(37, 99, 235, 0.85)");
+          gradient.addColorStop(1, "rgba(79, 70, 229, 1)");
 
           this.canvasCtx.fillStyle = gradient;
           const x = i * (barWidth + 3);
@@ -444,9 +444,9 @@ class SpeechService {
         const barHeight = Math.max(6, intensity * height * 0.7);
 
         const gradient = this.canvasCtx.createLinearGradient(0, height, 0, height - barHeight);
-        gradient.addColorStop(0, "rgba(16, 185, 129, 0.4)");
-        gradient.addColorStop(0.5, "rgba(6, 182, 212, 0.8)");
-        gradient.addColorStop(1, "rgba(99, 102, 241, 1)");
+        gradient.addColorStop(0, "rgba(2, 132, 199, 0.5)");
+        gradient.addColorStop(0.5, "rgba(6, 182, 212, 0.85)");
+        gradient.addColorStop(1, "rgba(37, 99, 235, 1)");
 
         this.canvasCtx.fillStyle = gradient;
         const x = i * (barWidth + 3);
@@ -487,7 +487,7 @@ class SpeechService {
     const barWidth = (width / barCount) - 3;
     for (let i = 0; i < barCount; i++) {
       const barHeight = 4;
-      this.canvasCtx.fillStyle = "rgba(148, 163, 184, 0.2)";
+      this.canvasCtx.fillStyle = "rgba(2, 132, 199, 0.3)";
       const x = i * (barWidth + 3);
       const y = (height - barHeight) / 2;
       this.canvasCtx.beginPath();
